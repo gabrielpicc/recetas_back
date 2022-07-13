@@ -7,6 +7,10 @@ module.exports = {
   //iniciar sesion
   signIn(req, res) {
     let { email, contraseña } = req.body;
+    // console.log(req.body);
+    // console.log(email);
+    // console.log(contraseña);
+    // console.log("hola soy el back");
 
     //buscar usuario
     usuario
@@ -25,10 +29,13 @@ module.exports = {
               expiresIn: authConfig.expires,
             });
 
-            res.json({
+            console.log(email)
+            //req.session.usuario = {email: email}
+
+            return res.json({
                 user: user,
                 token: token
-            })
+            }).status(200)
     
           } else {
             //Acceso no autorizado
@@ -45,7 +52,7 @@ module.exports = {
   signUp(req, res) {
     //encriptamos la pass
     let password = bcrypt.hashSync(req.body.contraseña, authConfig.rounds);
-
+    console.log(req.body);
     // crear un usuario
     usuario
       .create({
