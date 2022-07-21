@@ -1,3 +1,4 @@
+const { response } = require("express");
 const { where } = require("sequelize");
 const Sequelize = require("sequelize");
 const calificacion = require("../models").calificacion;
@@ -8,7 +9,30 @@ const usuario = require("../models").usuario;
 
 module.exports = {
   get_calificacion(req, res) {
-    return calificacion.findOne({
+    console.log(req.query);
+    calificacion
+      .findAll({
+        include: [
+          {
+            model: receta,
+            as: "receta",
+            attributes: ["id", "titulo"],
+          },
+        ],
+        where: {
+          receta_id: req.query.receta_id,
+          calificacion_sum: {[Op.not]: 0}
+        },
+      })
+      .then((calificacion) => res.status(200).send(calificacion))
+      .catch((error) => res.status(400).send(error));
+
+      //console.log(calificacion)
+  },
+
+  post_calificacion(req, res) {
+    //const create_calif = if()
+    const get_calificacion = calificacion.findOne({
       include: [
         {
           model: receta,
@@ -17,24 +41,40 @@ module.exports = {
         },
       ],
       where: {
-        receta_id: req.query.receta_id,
+        receta_id: req.body.receta_id,
+        user_id: req.body.user,
       },
     });
-  },
 
-  post_calificacion(req, res) {
-    return calificacion
-      .update({
-        calificacion_sum: Sequelize.literal(`calificacion_sum + ${req.body.calificacion}`),
-        total_personas: Sequelize.literal('total_personas + 1'),
-      },{
-        where: {
-          receta_id: req.body.receta_id,
-        },
-      })
-      .then((receta) => res.status(200).send(
-        'Se ha actualizado la calificacion correctamente'
-      ))
-      .catch((error) => res.status(400).send(error));
+    Promise.all([get_calificacion]).then((responses) => {
+      if (responses[0] !== null) {
+        return calificacion
+          .upsert({
+            id: responses[0].id,
+            user_id: req.body.user,
+            receta_id: req.body.receta_id,
+            calificacion_sum: parseInt(req.body.calificacion),
+          })
+          .then((receta) =>
+            res
+              .status(200)
+              .send("Se ha actualizado la calificacion correctamente")
+          )
+          .catch((error) => res.status(400).send(error));
+      } else {
+        return calificacion
+          .create({
+            user_id: req.body.user,
+            receta_id: req.body.receta_id,
+            calificacion_sum: parseInt(req.body.calificacion),
+          })
+          .then((receta) =>
+            res
+              .status(200)
+              .send("Se ha creado la calificacion correctamente")
+          )
+          .catch((error) => res.status(400).send(error));
+      }
+    });
   },
 };

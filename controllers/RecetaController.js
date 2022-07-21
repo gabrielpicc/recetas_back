@@ -8,6 +8,7 @@ const usuario = require("../models").usuario;
 const calificacion = require("../models").calificacion;
 
 function save_ings(ings, id) {
+  // console.log(ings)
   var allIngredients = [];
   for (var i = 0; i < ings.length; i++) {
     var ingredientObject = {
@@ -21,6 +22,7 @@ function save_ings(ings, id) {
 }
 
 function save_cats(cats, id) {
+  console.log(cats);
   var allCategories = [];
   for (var i = 0; i < cats.length; i++) {
     var categoryObject = {
@@ -29,12 +31,12 @@ function save_cats(cats, id) {
     };
     allCategories.push(categoryObject);
   }
-
   return allCategories;
 }
 
 module.exports = {
   async create(req, res) {
+    //console.log(req.body.procedimiento)
     // Usuario
     const responseUsuario = usuario.findOne({
       where: {
@@ -52,12 +54,14 @@ module.exports = {
             usuario_id: responses[0].id,
             titulo: req.body.titulo,
             dificultad: req.body.dificultad,
+            procedimiento: req.body.procedimiento,
             status: req.body.status,
           })
           .then((receta) => {
             let cod_receta = receta.id;
             let allIngredients = save_ings(ings, cod_receta);
             let allCategories = save_cats(cats, cod_receta);
+
             calificacion.create({
               receta_id: cod_receta,
               calificacion_sum: 0,
@@ -86,6 +90,21 @@ module.exports = {
             as: "usuario",
             attributes: ["id", "nombre", "apellido", "email"],
           },
+          {
+            model: ingrediente,
+            as: "ingredientes",
+            attributes: ["ingrediente_descr"],
+          },
+          {
+            model: calificacion,
+            as: "calificacions",
+            attributes: ["calificacion_sum"],
+          },
+          {
+            model: categoria,
+            as: "categoria",
+            attributes: ["descripcion"],
+          },
         ],
       })
       .then((receta) => res.status(200).send(receta))
@@ -103,7 +122,7 @@ module.exports = {
           },
         ],
         where: {
-          usuario_id: req.body.usuario_id,
+          usuario_id: req.params.usuario_id,
         },
       })
       .then((usuario) => res.status(200).send(usuario))
@@ -111,21 +130,42 @@ module.exports = {
   },
 
   async find_by_ingredient(req, res) {
-    return receta
-      .findAll({
-        include: [
-          {
-            model: ingrediente,
-            as: "ingrediente",
-            attributes: ["ingrediente_descr"],
+
+    var ing_descr = req.body.ingredientes.map(function (obj) {
+      return {ingrediente_descr: '%'+ obj + '%'};
+    });
+
+    const responseIngrediente = ingrediente.findAll({
+      where: {
+          [Op.or]: { [Op.like]: ing_descr}
+      },
+      attributes: ["receta_id"],
+    });
+
+    Promise.all([responseIngrediente]).then((responses) => {
+      let ings = [];
+      console.log("aweojkfweifu", ing_descr)
+      responses[0].forEach((ing) => {
+        ings.push(ing.dataValues.receta_id);
+      });
+      //console.log("el ingrediente", responses[0][0].dataValues.receta_id);
+      return receta
+        .findAll({
+          include: [
+            {
+              model: ingrediente,
+              as: "ingredientes",
+              attributes: ["ingrediente_descr"],
+            },
+          ],
+          where: {
+            id: ings,
           },
-        ],
-        where: {
-          ingrediente: req.body.usuario_id,
-        },
-      })
-      .then((usuario) => res.status(200).send(usuario))
-      .catch((error) => res.status(400).send(error));
+          raw: true,
+        })
+        .then((usuario) => res.status(200).send(usuario))
+        .catch((error) => res.status(400).send(error));
+    });
   },
 
   async find_by_anything(req, res) {
@@ -137,12 +177,26 @@ module.exports = {
             as: "usuario",
             attributes: ["id", "nombre", "apellido", "email"],
           },
+          {
+            model: ingrediente,
+            as: "ingredientes",
+            attributes: ["ingrediente_descr"],
+          },
+          {
+            model: calificacion,
+            as: "calificacions",
+            attributes: ["calificacion_sum"],
+          },
+          {
+            model: categoria,
+            as: "categoria",
+            attributes: ["descripcion"],
+          },
         ],
         where: {
           [Op.or]: [
             { usuario_id: { [Op.like]: "%" + req.body.param + "%" } },
             { titulo: { [Op.like]: "%" + req.body.param + "%" } },
-            { categorias: { [Op.like]: "%" + req.body.param + "%" } },
             { dificultad: req.body.param },
           ],
         },
@@ -188,17 +242,18 @@ module.exports = {
             id: req.body.id,
           },
         }
-      ).then((receta) => {
+      )
+      .then((receta) => {
         ingrediente.bulkCreate(allIngredients, {
           returning: true,
           individualHooks: true,
           updateOnDuplicate: ["ingrediente_descr", "receta_id"],
         }),
-        categoria.bulkCreate(allCategories, {
-          returning: true,
-          individualHooks: true,
-          updateOnDuplicate: ["descripcion", "receta_id"],
-        })
+          categoria.bulkCreate(allCategories, {
+            returning: true,
+            individualHooks: true,
+            updateOnDuplicate: ["descripcion", "receta_id"],
+          });
       })
       .then((usuario) => res.status(200).send(usuario))
       .catch((error) => res.status(400).send(error));
@@ -213,12 +268,27 @@ module.exports = {
             as: "usuario",
             attributes: ["id", "nombre", "apellido", "email"],
           },
+          {
+            model: ingrediente,
+            as: "ingredientes",
+            attributes: ["ingrediente_descr"],
+          },
+          {
+            model: calificacion,
+            as: "calificacions",
+            attributes: ["calificacion_sum"],
+          },
+          {
+            model: categoria,
+            as: "categoria",
+            attributes: ["descripcion"],
+          },
         ],
         where: {
-          id: req.query.id,
+          id: req.params.receta_id,
         },
       })
-      .then((usuario) => res.status(200).send(usuario))
+      .then((receta) => res.status(200).send(receta))
       .catch((error) => res.status(400).send(error));
   },
 

@@ -19,7 +19,8 @@ module.exports = (sequelize, DataTypes) => {
   calificacion.init({
     calificacion_sum: DataTypes.INTEGER,
     total_personas: DataTypes.INTEGER,
-    receta_id: DataTypes.INTEGER
+    receta_id: DataTypes.INTEGER,
+    user_id: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'calificacion',

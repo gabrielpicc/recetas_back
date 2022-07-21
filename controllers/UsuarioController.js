@@ -1,14 +1,14 @@
 const Sequelize = require("sequelize");
 const usuario = require("../models").usuario;
 module.exports = {
-  list(_, res) {
+  async list(_, res) {
     return usuario
       .findAll({})
       .then((usuario) => res.status(200).send(usuario))
       .catch((error) => res.status(400).send(error));
   },
 
-  find(req, res) {
+  async find(req, res) {
     return usuario
       .findAll({
         where: {
@@ -19,5 +19,23 @@ module.exports = {
       .catch((error) => res.status(400).send(error));
   },
 
-  
+  async update(req, res) {
+    console.log("el bodyyyyyyy", req.body)
+    return usuario
+      .update(
+        {
+          nombre: req.body.nombre,
+          apellido: req.body.apellido,
+          telefono: req.body.telefono,
+          email: req.body.email,
+        },
+        {
+          where: {
+            id: req.params.id,
+          },
+        }
+      )
+      .then((usuario) => res.status(200).send(usuario))
+      .catch((error) => res.status(400).send(error));
+  },
 };

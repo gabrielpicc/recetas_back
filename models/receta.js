@@ -11,14 +11,26 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.usuario, {
         as: "usuario",
         foreignKey: "usuario_id",
+      }),
+      this.hasMany(models.ingrediente, {
+        as: "ingredientes",
+        foreignKey: "receta_id"
+      }),
+      this.hasMany(models.calificacion, {
+        as: "calificacions",
+        foreignKey: "receta_id"
+      }),
+      this.hasMany(models.categoria, {
+        as: "categoria",
+        foreignKey: "receta_id"
       });
     }
   }
   receta.init(
     {
       titulo: DataTypes.STRING,
-      categorias: DataTypes.STRING,
       dificultad: DataTypes.INTEGER,
+      procedimiento: DataTypes.STRING,
       status: DataTypes.CHAR,
     },
     {

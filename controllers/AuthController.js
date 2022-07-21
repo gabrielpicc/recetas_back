@@ -7,10 +7,6 @@ module.exports = {
   //iniciar sesion
   signIn(req, res) {
     let { email, contraseña } = req.body;
-    // console.log(req.body);
-    // console.log(email);
-    // console.log(contraseña);
-    // console.log("hola soy el back");
 
     //buscar usuario
     usuario
