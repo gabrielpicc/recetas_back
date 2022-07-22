@@ -11,10 +11,6 @@ module.exports = {
       receta_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {
-          model: "receta",
-          key: "id",
-        },
       },
       calificacion_sum: {
         type: Sequelize.INTEGER,

@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(models.receta, {
         as: "recetas",
         foreignKey: "usuario_id",
+        onDelete: 'CASCADE'
       });
     }
   }
@@ -38,15 +39,21 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           isEmail: {
             msg: "El email tiene que ser un correo valido",
-          }
+          },
         },
       },
-      contraseña: { type: DataTypes.STRING, allowNull: false, validate: {
-        len: {
-          args: [8,255],
-          msg: "La contraseña tiene que tener como minimo 8 caracteres"
-        }
-      } },
+      contraseña: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          len: {
+            args: [8, 255],
+            msg: "La contraseña tiene que tener como minimo 8 caracteres",
+          },
+        },
+      },
+      pregunta: { type: DataTypes.STRING, allowNull: false },
+      respuesta: { type: DataTypes.STRING, allowNull: false },
     },
     {
       sequelize,

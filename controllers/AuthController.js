@@ -57,6 +57,8 @@ module.exports = {
         telefono: req.body.telefono,
         email: req.body.email,
         contraseña: password,
+        pregunta: req.body.pregunta,
+        respuesta: req.body.respuesta,
       })
       .then((user) => {
         let token = jwt.sign({ user: user }, authConfig.secret, {

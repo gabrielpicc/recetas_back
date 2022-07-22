@@ -12,18 +12,21 @@ module.exports = (sequelize, DataTypes) => {
         as: "usuario",
         foreignKey: "usuario_id",
       }),
-      this.hasMany(models.ingrediente, {
-        as: "ingredientes",
-        foreignKey: "receta_id"
-      }),
-      this.hasMany(models.calificacion, {
-        as: "calificacions",
-        foreignKey: "receta_id"
-      }),
-      this.hasMany(models.categoria, {
-        as: "categoria",
-        foreignKey: "receta_id"
-      });
+        this.hasMany(models.ingrediente, {
+          as: "ingredientes",
+          foreignKey: "receta_id",
+          onDelete: "cascade",
+        }),
+        this.hasMany(models.calificacion, {
+          as: "calificacions",
+          foreignKey: "receta_id",
+          onDelete: "cascade",
+        }),
+        this.hasMany(models.categoria, {
+          as: "categoria",
+          foreignKey: "receta_id",
+          onDelete: "cascade",
+        });
     }
   }
   receta.init(

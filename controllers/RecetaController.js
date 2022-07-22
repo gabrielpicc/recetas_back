@@ -22,7 +22,7 @@ function save_ings(ings, id) {
 }
 
 function save_cats(cats, id) {
-  console.log(cats);
+  //console.log(cats);
   var allCategories = [];
   for (var i = 0; i < cats.length; i++) {
     var categoryObject = {
@@ -106,6 +106,9 @@ module.exports = {
             attributes: ["descripcion"],
           },
         ],
+        where:{
+          status: {[Op.not]: "Borrador"}
+        }
       })
       .then((receta) => res.status(200).send(receta))
       .catch((error) => res.status(400).send(error));
@@ -119,6 +122,20 @@ module.exports = {
             model: usuario,
             as: "usuario",
             attributes: ["id", "nombre", "apellido", "email"],
+          },{
+            model: ingrediente,
+            as: "ingredientes",
+            attributes: ["ingrediente_descr"],
+          },
+          {
+            model: calificacion,
+            as: "calificacions",
+            attributes: ["calificacion_sum"],
+          },
+          {
+            model: categoria,
+            as: "categoria",
+            attributes: ["descripcion"],
           },
         ],
         where: {
@@ -209,8 +226,10 @@ module.exports = {
     const ings = req.body.ingredientes.split(",");
     const cats = req.body.categorias.split(",");
 
-    let allIngredients = save_ings(ings, receta.id);
-    let allCategories = save_cats(cats, receta.id);
+    let allIngredients = save_ings(ings, req.body.receta_id);
+    let allCategories = save_cats(cats, req.body.receta_id);
+    console.log(req.body)
+    console.log(allCategories)
 
     return receta
       .update(
@@ -218,10 +237,6 @@ module.exports = {
           titulo: req.body.titulo,
           dificultad: req.body.dificultad,
           status: req.body.status,
-          calificacion_sum: Sequelize.literal(
-            `calificacion_sum + ${req.body.calificacion}`
-          ),
-          total_personas: Sequelize.literal("total_personas + 1"),
         },
         {
           include: [
@@ -230,16 +245,12 @@ module.exports = {
               as: "ingrediente",
             },
             {
-              model: calificacion,
-              as: "calificacion",
-            },
-            {
               model: categoria,
               as: "categoria",
             },
           ],
           where: {
-            id: req.body.id,
+            id: req.body.receta_id,
           },
         }
       )
@@ -296,12 +307,43 @@ module.exports = {
     return receta
       .destroy({
         where: {
-          id: req.query.id,
+          id: req.params.receta_id,
         },
       })
       .then((receta) =>
-        res.status(200).send("La receta fue eliminada correctamente")
-      )
+        res.status(200).send("La receta fue eliminada correctamente"))
+      .catch((error) => res.status(400).send(error));
+  },
+
+  async delete_cats_and_ings(req, res) {
+    receta
+      .findOne({include: [
+        {
+          model: ingrediente,
+          as: "ingrediente",
+        },
+        {
+          model: categoria,
+          as: "categoria",
+        },
+      ],
+        where: {
+          id: req.params.receta_id,
+        },
+      })
+      .then((receta) =>{
+        console.log("rjgnsekrjfhbekrg",receta.id)
+        ingrediente.destroy({
+          where: {
+            receta_id: receta.id
+          }
+        }),
+        categoria.destroy({
+          where:{
+            receta_id: receta.id
+          }
+        })
+      })
       .catch((error) => res.status(400).send(error));
   },
 };

@@ -1,5 +1,8 @@
 const Sequelize = require("sequelize");
 const usuario = require("../models").usuario;
+const bcrypt = require("bcrypt");
+const authConfig = require("../config/auth");
+
 module.exports = {
   async list(_, res) {
     return usuario
@@ -20,7 +23,7 @@ module.exports = {
   },
 
   async update(req, res) {
-    console.log("el bodyyyyyyy", req.body)
+    console.log("el bodyyyyyyy", req.body);
     return usuario
       .update(
         {
@@ -32,6 +35,36 @@ module.exports = {
         {
           where: {
             id: req.params.id,
+          },
+        }
+      )
+      .then((usuario) => res.status(200).send(usuario))
+      .catch((error) => res.status(400).send(error));
+  },
+
+  async recuperarDatosPregunta(req, res) {
+    console.log(req.query.email);
+    return usuario
+      .findOne({
+        where: {
+          email: req.query.email,
+        },
+      })
+      .then((usuario) => res.status(200).send(usuario))
+      .catch((error) => res.status(400).send(error));
+  },
+
+  async establecerNuevaContraseña(req, res) {
+    console.log("el reeeeeeeeeeeeeeeeeeeq",req)
+    let password = bcrypt.hashSync(req.body.contraseña, authConfig.rounds);
+    return usuario
+      .update(
+        {
+          contraseña: password,
+        },
+        {
+          where: {
+            email: req.body.email,
           },
         }
       )

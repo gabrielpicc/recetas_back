@@ -1,6 +1,8 @@
 /* Controllers */
 const usuarioController = require("../controllers/UsuarioController");
 const recetaController = require("../controllers/RecetaController");
+const ingredienteController = require("../controllers/IngredienteController");
+const categoriaController = require("../controllers/CategoriaController");
 const AuthController = require("../controllers/AuthController");
 const CalificacionController = require("../controllers/CalificacionController");
 
@@ -14,8 +16,10 @@ module.exports = (app) => {
     res.set('Access-Control-Allow-Origin', 'http://localhost:3000'));
   });
   app.options("/api/usuario/list", usuarioController.list);
-  app.get("/api/usuario/find", usuarioController.find);
+  app.get("/api/usuario/find/:id", usuarioController.find);
   app.put("/api/usuario/update/:id", auth, usuarioController.update);
+  app.get("/api/usuario/obtenerDatos", usuarioController.recuperarDatosPregunta);
+  app.put("/api/usuario/cambiarPass", usuarioController.establecerNuevaContraseña);
 
   //recetas
   app.get("/api/receta/list", recetaController.list);
@@ -30,10 +34,12 @@ module.exports = (app) => {
   app.get("/api/receta/anything", recetaController.find_by_anything);
   app.get("/api/receta/receta_id/:receta_id", recetaController.recepie_by_id);
   app.delete(
-    "/api/receta/delete/receta_id",
+    "/api/receta/delete/:receta_id",
     auth,
     recetaController.delete_recepie
   );
+  app.delete("/api/receta/cats/:receta_id", auth, categoriaController.delete);
+  app.delete("/api/receta/ings/:receta_id", auth, ingredienteController.delete);
 
   //calificacion
   app.get(
