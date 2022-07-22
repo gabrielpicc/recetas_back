@@ -9,7 +9,6 @@ const usuario = require("../models").usuario;
 
 module.exports = {
   get_calificacion(req, res) {
-    console.log(req.query);
     calificacion
       .findAll({
         include: [
@@ -26,12 +25,9 @@ module.exports = {
       })
       .then((calificacion) => res.status(200).send(calificacion))
       .catch((error) => res.status(400).send(error));
-
-      //console.log(calificacion)
   },
 
   post_calificacion(req, res) {
-    //const create_calif = if()
     const get_calificacion = calificacion.findOne({
       include: [
         {

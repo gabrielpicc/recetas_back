@@ -25,9 +25,6 @@ module.exports = {
               expiresIn: authConfig.expires,
             });
 
-            console.log(email)
-            //req.session.usuario = {email: email}
-
             return res.json({
                 user: user,
                 token: token

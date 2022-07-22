@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
 
 module.exports = (req, res, next) => {
-  console.log(req.headers);
 
   //comprobar que exista el token
   if (!req.headers.authorization) {

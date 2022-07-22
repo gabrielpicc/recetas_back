@@ -5,6 +5,7 @@ const ingredienteController = require("../controllers/IngredienteController");
 const categoriaController = require("../controllers/CategoriaController");
 const AuthController = require("../controllers/AuthController");
 const CalificacionController = require("../controllers/CalificacionController");
+const ImagenController = require("../controllers/ImageController");
 
 const auth = require("../middlewares/auth");
 module.exports = (app) => {
@@ -40,9 +41,9 @@ module.exports = (app) => {
   );
   app.delete("/api/receta/cats/:receta_id", auth, categoriaController.delete);
   app.delete("/api/receta/ings/:receta_id", auth, ingredienteController.delete);
-  app.get("/api/receta/ingredient/:ingrediente", recetaController.find_by_ingredient); //nuevo3
-  app.get("/api/receta/titulo", recetaController.find_by_titulo); //nuevo3
-  app.get("/api/receta/categoria/:categoria", recetaController.find_by_category); //nuevo3
+  app.get("/api/receta/ingredient/:ingrediente", recetaController.find_by_ingredient); 
+  app.get("/api/receta/titulo", recetaController.find_by_titulo); 
+  app.get("/api/receta/categoria/:categoria", recetaController.find_by_category); 
   app.get("/api/receta/dificultad", recetaController.find_by_dificultad);
 
   //calificacion
@@ -61,4 +62,8 @@ module.exports = (app) => {
 
   app.post("/api/login", AuthController.signIn);
   app.post("/api/signup", AuthController.signUp);
+
+  //imagenes
+  app.post("/api/imagenes", ImagenController.createUserImg);
+  app.post("/api/imagenes/upload", ImagenController.uploadImage);
 };

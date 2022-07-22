@@ -8,7 +8,6 @@ const usuario = require("../models").usuario;
 const calificacion = require("../models").calificacion;
 
 function save_ings(ings, id) {
-  // console.log(ings)
   var allIngredients = [];
   for (var i = 0; i < ings.length; i++) {
     var ingredientObject = {
@@ -22,7 +21,6 @@ function save_ings(ings, id) {
 }
 
 function save_cats(cats, id) {
-  //console.log(cats);
   var allCategories = [];
   for (var i = 0; i < cats.length; i++) {
     var categoryObject = {
@@ -36,7 +34,6 @@ function save_cats(cats, id) {
 
 module.exports = {
   async create(req, res) {
-    //console.log(req.body.procedimiento)
     // Usuario
     const responseUsuario = usuario.findOne({
       where: {
@@ -148,7 +145,6 @@ module.exports = {
   },
 
   async find_by_titulo(req, res) {
-    console.log("back", req.query.titulo);
     return receta
       .findAll({
         where: {
@@ -171,7 +167,6 @@ module.exports = {
   },
 
   async find_by_ingredient(req, res) {
-    console.log(req.params.ingrediente);
     const responseIng = ingrediente.findAll({
       where: {
         ingrediente_descr: req.params.ingrediente,
@@ -180,7 +175,6 @@ module.exports = {
 
     const recepiesIds = (recetas) => {
       let idArray = [];
-      console.log("las recetas", recetas);
       recetas.forEach((receta) => {
         idArray.push(receta.dataValues.receta_id);
       });
@@ -189,9 +183,7 @@ module.exports = {
 
     Promise.all([responseIng])
       .then((responses) => {
-        console.log("wlkefnwoklejfnwilefk", responses[0][0]);
         let idArray = recepiesIds(responses[0]);
-        console.log(idArray);
         return receta.findAll({
           include: [
             {
@@ -226,9 +218,7 @@ module.exports = {
 
     Promise.all([responseCat])
       .then((responses) => {
-        console.log(responses[0][1].dataValues.receta_id);
         let idArray = recepiesIds(responses[0]);
-        console.log(idArray);
         return receta.findAll({
           include: [
             {
@@ -289,8 +279,6 @@ module.exports = {
 
     let allIngredients = save_ings(ings, req.body.receta_id);
     let allCategories = save_cats(cats, req.body.receta_id);
-    console.log(req.body);
-    console.log(allCategories);
 
     return receta
       .update(
@@ -395,7 +383,6 @@ module.exports = {
         },
       })
       .then((receta) => {
-        console.log("rjgnsekrjfhbekrg", receta.id);
         ingrediente.destroy({
           where: {
             receta_id: receta.id,
