@@ -16,7 +16,13 @@ module.exports = (sequelize, DataTypes) => {
   }
   ingrediente.init(
     {
-      ingrediente_descr: DataTypes.STRING,
+      ingrediente_descr: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          is: /^[0-9a-f]$/i,
+        },
+      },
       receta_id: DataTypes.INTEGER,
     },
     {

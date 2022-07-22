@@ -40,6 +40,10 @@ module.exports = (app) => {
   );
   app.delete("/api/receta/cats/:receta_id", auth, categoriaController.delete);
   app.delete("/api/receta/ings/:receta_id", auth, ingredienteController.delete);
+  app.get("/api/receta/ingredient/:ingrediente", recetaController.find_by_ingredient); //nuevo3
+  app.get("/api/receta/titulo", recetaController.find_by_titulo); //nuevo3
+  app.get("/api/receta/categoria/:categoria", recetaController.find_by_category); //nuevo3
+  app.get("/api/receta/dificultad", recetaController.find_by_dificultad);
 
   //calificacion
   app.get(

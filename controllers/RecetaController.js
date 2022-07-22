@@ -106,9 +106,9 @@ module.exports = {
             attributes: ["descripcion"],
           },
         ],
-        where:{
-          status: {[Op.not]: "Borrador"}
-        }
+        where: {
+          status: { [Op.not]: "Borrador" },
+        },
       })
       .then((receta) => res.status(200).send(receta))
       .catch((error) => res.status(400).send(error));
@@ -122,7 +122,8 @@ module.exports = {
             model: usuario,
             as: "usuario",
             attributes: ["id", "nombre", "apellido", "email"],
-          },{
+          },
+          {
             model: ingrediente,
             as: "ingredientes",
             attributes: ["ingrediente_descr"],
@@ -146,28 +147,52 @@ module.exports = {
       .catch((error) => res.status(400).send(error));
   },
 
+  async find_by_titulo(req, res) {
+    console.log("back", req.query.titulo);
+    return receta
+      .findAll({
+        where: {
+          titulo: { [Op.like]: "%" + req.query.titulo + "%" },
+        },
+      })
+      .then((usuario) => res.status(200).send(usuario))
+      .catch((error) => res.status(400).send(error));
+  },
+
+  async find_by_dificultad(req, res) {
+    return receta
+      .findAll({
+        where: {
+          dificultad: req.query.dificultad,
+        },
+      })
+      .then((usuario) => res.status(200).send(usuario))
+      .catch((error) => res.status(400).send(error));
+  },
+
   async find_by_ingredient(req, res) {
-
-    var ing_descr = req.body.ingredientes.map(function (obj) {
-      return {ingrediente_descr: '%'+ obj + '%'};
-    });
-
-    const responseIngrediente = ingrediente.findAll({
+    console.log(req.params.ingrediente);
+    const responseIng = ingrediente.findAll({
       where: {
-          [Op.or]: { [Op.like]: ing_descr}
+        ingrediente_descr: req.params.ingrediente,
       },
-      attributes: ["receta_id"],
     });
 
-    Promise.all([responseIngrediente]).then((responses) => {
-      let ings = [];
-      console.log("aweojkfweifu", ing_descr)
-      responses[0].forEach((ing) => {
-        ings.push(ing.dataValues.receta_id);
+    const recepiesIds = (recetas) => {
+      let idArray = [];
+      console.log("las recetas", recetas);
+      recetas.forEach((receta) => {
+        idArray.push(receta.dataValues.receta_id);
       });
-      //console.log("el ingrediente", responses[0][0].dataValues.receta_id);
-      return receta
-        .findAll({
+      return idArray;
+    };
+
+    Promise.all([responseIng])
+      .then((responses) => {
+        console.log("wlkefnwoklejfnwilefk", responses[0][0]);
+        let idArray = recepiesIds(responses[0]);
+        console.log(idArray);
+        return receta.findAll({
           include: [
             {
               model: ingrediente,
@@ -176,13 +201,49 @@ module.exports = {
             },
           ],
           where: {
-            id: ings,
+            id: { [Op.or]: idArray },
           },
-          raw: true,
-        })
-        .then((usuario) => res.status(200).send(usuario))
-        .catch((error) => res.status(400).send(error));
+        });
+      })
+      .then((usuario) => res.status(200).send(usuario))
+      .catch((error) => res.status(400).send(error));
+  },
+
+  async find_by_category(req, res) {
+    const responseCat = categoria.findAll({
+      where: {
+        descripcion: req.params.categoria,
+      },
     });
+
+    const recepiesIds = (recetas) => {
+      let idArray = [];
+      recetas.forEach((receta) => {
+        idArray.push(receta.dataValues.receta_id);
+      });
+      return idArray;
+    };
+
+    Promise.all([responseCat])
+      .then((responses) => {
+        console.log(responses[0][1].dataValues.receta_id);
+        let idArray = recepiesIds(responses[0]);
+        console.log(idArray);
+        return receta.findAll({
+          include: [
+            {
+              model: categoria,
+              as: "categoria",
+              attributes: ["descripcion"],
+            },
+          ],
+          where: {
+            id: { [Op.or]: idArray },
+          },
+        });
+      })
+      .then((usuario) => res.status(200).send(usuario))
+      .catch((error) => res.status(400).send(error));
   },
 
   async find_by_anything(req, res) {
@@ -228,8 +289,8 @@ module.exports = {
 
     let allIngredients = save_ings(ings, req.body.receta_id);
     let allCategories = save_cats(cats, req.body.receta_id);
-    console.log(req.body)
-    console.log(allCategories)
+    console.log(req.body);
+    console.log(allCategories);
 
     return receta
       .update(
@@ -311,38 +372,40 @@ module.exports = {
         },
       })
       .then((receta) =>
-        res.status(200).send("La receta fue eliminada correctamente"))
+        res.status(200).send("La receta fue eliminada correctamente")
+      )
       .catch((error) => res.status(400).send(error));
   },
 
   async delete_cats_and_ings(req, res) {
     receta
-      .findOne({include: [
-        {
-          model: ingrediente,
-          as: "ingrediente",
-        },
-        {
-          model: categoria,
-          as: "categoria",
-        },
-      ],
+      .findOne({
+        include: [
+          {
+            model: ingrediente,
+            as: "ingrediente",
+          },
+          {
+            model: categoria,
+            as: "categoria",
+          },
+        ],
         where: {
           id: req.params.receta_id,
         },
       })
-      .then((receta) =>{
-        console.log("rjgnsekrjfhbekrg",receta.id)
+      .then((receta) => {
+        console.log("rjgnsekrjfhbekrg", receta.id);
         ingrediente.destroy({
           where: {
-            receta_id: receta.id
-          }
+            receta_id: receta.id,
+          },
         }),
-        categoria.destroy({
-          where:{
-            receta_id: receta.id
-          }
-        })
+          categoria.destroy({
+            where: {
+              receta_id: receta.id,
+            },
+          });
       })
       .catch((error) => res.status(400).send(error));
   },
